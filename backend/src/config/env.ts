@@ -20,7 +20,7 @@ const environmentSchema = z.object({
   MONGODB_URI: z.string().min(1).default(
     process.env.NODE_ENV === "production" ? "" : "mongodb://127.0.0.1:27017/campus_connect",
   ),
-  CORS_ORIGINS: z.string().default("http://localhost:3000"),
+  CORS_ORIGINS: z.string().default("*"),
   TRUST_PROXY: z.enum(["true", "false"]).default("false").transform((value) => value === "true"),
   LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"]).default("info"),
   JWT_SECRET: z.string().min(32).default(

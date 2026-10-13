@@ -25,12 +25,14 @@ app.use(cors({
       !origin ||
       corsOrigins.includes("*") ||
       corsOrigins.includes(origin) ||
-      (env.NODE_ENV === "development" &&
-        (origin.startsWith("http://localhost:") ||
-          origin.startsWith("http://127.0.0.1:") ||
-          origin.startsWith("http://10.") ||
-          origin.startsWith("http://192.168.") ||
-          origin.startsWith("exp://")))
+      origin.startsWith("http://localhost:") ||
+      origin.startsWith("http://127.0.0.1:") ||
+      origin.startsWith("http://10.") ||
+      origin.startsWith("http://192.168.") ||
+      origin.startsWith("exp://") ||
+      origin.endsWith(".onrender.com") ||
+      origin.endsWith(".vercel.app") ||
+      origin.endsWith(".netlify.app")
     ) {
       callback(null, true);
       return;
@@ -38,6 +40,8 @@ app.use(cors({
     callback(new AppError(403, "Origin not allowed"));
   },
   credentials: true,
+  methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "x-request-id", "Accept"],
 }));
 app.use(compression());
 app.use(express.json({ limit: "1mb" }));
