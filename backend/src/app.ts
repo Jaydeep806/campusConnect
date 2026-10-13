@@ -16,7 +16,7 @@ import { healthRouter } from "./routes/health.routes.js";
 export const app = express();
 
 app.disable("x-powered-by");
-app.set("trust proxy", env.TRUST_PROXY);
+app.set("trust proxy", env.TRUST_PROXY ? 1 : false);
 
 app.use(helmet());
 app.use(cors({
@@ -63,6 +63,7 @@ app.use(rateLimit({
   limit: 100,
   standardHeaders: "draft-8",
   legacyHeaders: false,
+  validate: { trustProxy: false },
 }));
 app.use("/", apiRouter);
 app.use(notFoundHandler);
