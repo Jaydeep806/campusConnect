@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import dns from "node:dns";
 import { env } from "./config/env.js";
 import { hashPassword } from "./auth/password.js";
 import { User } from "./models/user.model.js";
@@ -9,6 +10,10 @@ import { Announcement } from "./models/announcement.model.js";
 import { Application } from "./models/application.model.js";
 
 async function seed() {
+  try {
+    dns.setServers(["8.8.8.8", "8.8.4.4", "1.1.1.1"]);
+  } catch {}
+
   console.log("Connecting to MongoDB:", env.MONGODB_URI);
   await mongoose.connect(env.MONGODB_URI);
 

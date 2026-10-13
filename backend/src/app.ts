@@ -23,6 +23,7 @@ app.use(cors({
   origin(origin, callback) {
     if (
       !origin ||
+      corsOrigins.includes("*") ||
       corsOrigins.includes(origin) ||
       (env.NODE_ENV === "development" &&
         (origin.startsWith("http://localhost:") ||

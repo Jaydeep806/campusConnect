@@ -48,20 +48,7 @@ const environmentSchema = z.object({
     });
   }
   if (values.NODE_ENV === "production") {
-    if (!values.SMTP_URL || !values.SMTP_FROM) {
-      context.addIssue({
-        code: "custom",
-        message: "SMTP_URL and SMTP_FROM are required in production for password reset delivery",
-        path: ["SMTP_URL"],
-      });
-    }
-    if (!values.PASSWORD_RESET_URL) {
-      context.addIssue({
-        code: "custom",
-        message: "PASSWORD_RESET_URL is required in production",
-        path: ["PASSWORD_RESET_URL"],
-      });
-    } else if (new URL(values.PASSWORD_RESET_URL).protocol !== "https:") {
+    if (values.PASSWORD_RESET_URL && new URL(values.PASSWORD_RESET_URL).protocol !== "https:") {
       context.addIssue({
         code: "custom",
         message: "PASSWORD_RESET_URL must use HTTPS in production",
