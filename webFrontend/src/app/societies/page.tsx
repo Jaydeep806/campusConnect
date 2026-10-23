@@ -11,9 +11,11 @@ import { CategoryFilters } from '../../components/CategoryFilters';
 import { ApplicationModal } from '../../components/ApplicationModal';
 import { SocietyItem } from '../../types';
 import { api } from '../../services/api';
-import { ArrowLeft, Users, ExternalLink, CheckCircle2, Search } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import { ArrowLeft, Users, ExternalLink, CheckCircle2, Search, ShieldCheck, Settings } from 'lucide-react';
 
 export default function SocietiesPage() {
+  const { role } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [societies, setSocieties] = useState<SocietyItem[]>([]);
@@ -72,6 +74,41 @@ export default function SocietiesPage() {
             <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
               Explore official campus clubs, check open positions, and connect with student leaders.
             </p>
+
+            {role === 'admin' && (
+              <div
+                style={{
+                  marginTop: '16px',
+                  padding: '12px 18px',
+                  borderRadius: '12px',
+                  background: 'linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%)',
+                  border: '1px solid #C7D2FE',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: '12px',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <ShieldCheck size={18} color="#4F46E5" />
+                  <span style={{ fontSize: '0.86rem', fontWeight: 700, color: '#312E81' }}>
+                    Admin Mode Active: You have full administrative control to approve, edit, suspend, and delete campus societies.
+                  </span>
+                </div>
+                <Link
+                  href="/"
+                  style={{
+                    fontSize: '0.82rem',
+                    fontWeight: 700,
+                    color: '#4F46E5',
+                    textDecoration: 'underline',
+                  }}
+                >
+                  Open Admin Club Manager →
+                </Link>
+              </div>
+            )}
           </div>
 
           <CategoryFilters
@@ -173,13 +210,35 @@ export default function SocietiesPage() {
                         {soc.hasOpenRecruitment ? '● Hiring Active' : '○ Closed for now'}
                       </span>
 
-                      <button
-                        className="apply-btn-primary"
-                        style={{ padding: '6px 14px', fontSize: '0.75rem' }}
-                        onClick={() => setSelectedSocietyForApply(soc)}
-                      >
-                        Apply / Join
-                      </button>
+                      {role === 'admin' ? (
+                        <Link
+                          href="/"
+                          className="apply-btn-primary"
+                          style={{
+                            padding: '6px 14px',
+                            fontSize: '0.75rem',
+                            textDecoration: 'none',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                            background: 'linear-gradient(135deg, #4F46E5 0%, #3B82F6 100%)',
+                            color: '#FFFFFF',
+                            borderRadius: '999px',
+                            fontWeight: 600,
+                          }}
+                        >
+                          <Settings size={13} />
+                          <span>Admin Manage</span>
+                        </Link>
+                      ) : (
+                        <button
+                          className="apply-btn-primary"
+                          style={{ padding: '6px 14px', fontSize: '0.75rem' }}
+                          onClick={() => setSelectedSocietyForApply(soc)}
+                        >
+                          Apply / Join
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

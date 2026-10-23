@@ -22,11 +22,11 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ onOpenProfile 
       </Link>
 
       <Link
-        href="/societies"
-        className={`mobile-nav-item ${pathname.startsWith('/societies') ? 'active' : ''}`}
+        href="/recruitment"
+        className={`mobile-nav-item ${pathname.startsWith('/recruitment') ? 'active' : ''}`}
       >
-        <Shield size={20} />
-        <span>{role === 'admin' ? 'Clubs' : 'Societies'}</span>
+        <Briefcase size={20} />
+        <span>Hiring</span>
       </Link>
 
       <Link

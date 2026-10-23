@@ -61,6 +61,24 @@ body {
   color: var(--text-main);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE & Edge */
+}
+
+/* Invisible scrollbars globally across all containers while preserving full scrolling */
+*,
+*::before,
+*::after {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  display: none !important;
+  width: 0px !important;
+  height: 0px !important;
+  background: transparent !important;
 }
 
 a {

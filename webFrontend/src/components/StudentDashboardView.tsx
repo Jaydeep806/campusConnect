@@ -11,7 +11,7 @@ import { UpcomingEventsCard } from './UpcomingEventsCard';
 import { RecruitmentCard } from './RecruitmentCard';
 import { RecentApplicationsCard } from './RecentApplicationsCard';
 import { SocietyItem, EventItem, ApplicationItem } from '../types';
-import { FileText, Compass, Calendar, UserPen } from 'lucide-react';
+import { FileText, Compass, Calendar, UserPen, Briefcase } from 'lucide-react';
 
 interface StudentDashboardViewProps {
   societies: SocietyItem[];
@@ -86,7 +86,16 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
           <div className="section-header" style={{ marginBottom: '12px' }}>
             <h3 className="section-title">Student Shortcuts</h3>
           </div>
-          <div className="quick-actions-row">
+          <div className="quick-actions-row" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
+            <Link
+              href="/recruitment"
+              className="quick-action-btn quick-action-blue"
+              style={{ textDecoration: 'none' }}
+            >
+              <Briefcase size={18} />
+              <span>Hiring Drives</span>
+            </Link>
+
             <Link
               href="/applications"
               className="quick-action-btn quick-action-green"
@@ -106,7 +115,7 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
             </Link>
 
             <button
-              className="quick-action-btn quick-action-blue"
+              className="quick-action-btn quick-action-amber"
               onClick={onEditProfile}
             >
               <UserPen size={18} />

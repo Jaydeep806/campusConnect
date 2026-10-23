@@ -33,7 +33,11 @@ export default function RecruitmentPage() {
     setLoading(true);
     try {
       const [recs, socs] = await Promise.all([
-        role === 'club' ? api.getClubRecruitments() : api.getRecruitments(),
+        role === 'club'
+          ? api.getClubRecruitments()
+          : role === 'admin'
+          ? api.adminGetRecruitments()
+          : api.getRecruitments(),
         api.getSocieties(),
       ]);
       setRecruitments(recs);
@@ -113,7 +117,7 @@ export default function RecruitmentPage() {
               </p>
             </div>
 
-            {role === 'club' && (
+            {(role === 'club' || role === 'admin') && (
               <button
                 className="apply-btn-primary"
                 onClick={() => setIsStartHiringOpen(true)}
@@ -265,7 +269,7 @@ export default function RecruitmentPage() {
                           <ExternalLink size={14} />
                         </a>
                       )}
-                      {role === 'club' ? (
+                      {role === 'club' || role === 'admin' ? (
                         <button
                           className="apply-btn-primary"
                           style={{

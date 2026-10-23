@@ -61,6 +61,13 @@ class ApiService {
     return this.accessToken;
   }
 
+  getRole(): string | null {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('cc_role');
+    }
+    return null;
+  }
+
   private getHeaders(): Record<string, string> {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -772,7 +779,12 @@ class ApiService {
       }
     }
 
-    const res = await fetch(`${API_BASE_URL}/club/events/${cleanId}`, {
+    const endpoint =
+      this.getRole() === 'admin'
+        ? `${API_BASE_URL}/admin/events/${cleanId}`
+        : `${API_BASE_URL}/club/events/${cleanId}`;
+
+    const res = await fetch(endpoint, {
       method: 'PATCH',
       headers: this.getHeaders(),
       body: JSON.stringify({
@@ -795,7 +807,11 @@ class ApiService {
     if (!cleanId || cleanId === 'undefined' || cleanId === 'null') {
       throw new Error('Invalid event ID');
     }
-    const res = await fetch(`${API_BASE_URL}/club/events/${cleanId}`, {
+    const endpoint =
+      this.getRole() === 'admin'
+        ? `${API_BASE_URL}/admin/events/${cleanId}`
+        : `${API_BASE_URL}/club/events/${cleanId}`;
+    const res = await fetch(endpoint, {
       method: 'DELETE',
       headers: this.getHeaders(),
     });
@@ -878,7 +894,12 @@ class ApiService {
       if (!isNaN(d.getTime())) closesAt = d.toISOString();
     }
 
-    const res = await fetch(`${API_BASE_URL}/club/recruitments/${cleanId}`, {
+    const endpoint =
+      this.getRole() === 'admin'
+        ? `${API_BASE_URL}/admin/recruitments/${cleanId}`
+        : `${API_BASE_URL}/club/recruitments/${cleanId}`;
+
+    const res = await fetch(endpoint, {
       method: 'PATCH',
       headers: this.getHeaders(),
       body: JSON.stringify({
@@ -900,7 +921,11 @@ class ApiService {
     if (!cleanId || cleanId === 'undefined' || cleanId === 'null') {
       throw new Error('Invalid recruitment ID');
     }
-    const res = await fetch(`${API_BASE_URL}/club/recruitments/${cleanId}`, {
+    const endpoint =
+      this.getRole() === 'admin'
+        ? `${API_BASE_URL}/admin/recruitments/${cleanId}`
+        : `${API_BASE_URL}/club/recruitments/${cleanId}`;
+    const res = await fetch(endpoint, {
       method: 'DELETE',
       headers: this.getHeaders(),
     });
@@ -1010,24 +1035,195 @@ class ApiService {
     return data;
   }
 
-  async rejectClub(clubId: string) {
-    // Graceful fallback for declining club request
-    return { success: true };
+  // --- ADMIN FULL ACCESS API ---
+  async adminGetStats() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/stats`, {
+        headers: this.getHeaders(),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return data.stats;
+      }
+    } catch (e) {
+      console.warn('API adminGetStats error:', e);
+    }
+    return null;
   }
 
-  async createAdminAnnouncement(payload: { title: string; body: string }) {
+  async adminGetClubs() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/clubs`, {
+        headers: this.getHeaders(),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return data.clubs || [];
+      }
+    } catch (e) {
+      console.warn('API adminGetClubs error:', e);
+    }
+    return [];
+  }
+
+  async adminSetClubStatus(clubId: string, status: 'approved' | 'rejected' | 'pending') {
+    const res = await fetch(`${API_BASE_URL}/admin/clubs/${clubId}/status`, {
+      method: 'PATCH',
+      headers: this.getHeaders(),
+      body: JSON.stringify({ status }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data?.error?.message || 'Failed to update club status');
+    return data;
+  }
+
+  async adminUpdateClubProfile(clubId: string, payload: any) {
+    const res = await fetch(`${API_BASE_URL}/admin/clubs/${clubId}/profile`, {
+      method: 'PATCH',
+      headers: this.getHeaders(),
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data?.error?.message || 'Failed to update club profile');
+    return data;
+  }
+
+  async adminDeleteClub(clubId: string) {
+    const res = await fetch(`${API_BASE_URL}/admin/clubs/${clubId}`, {
+      method: 'DELETE',
+      headers: this.getHeaders(),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data?.error?.message || 'Failed to delete club');
+    return data;
+  }
+
+  async adminGetEvents() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/events`, {
+        headers: this.getHeaders(),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return data.events || [];
+      }
+    } catch (e) {
+      console.warn('API adminGetEvents error:', e);
+    }
+    return [];
+  }
+
+  async adminCreateEvent(payload: any) {
+    const res = await fetch(`${API_BASE_URL}/admin/events`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data?.error?.message || 'Failed to create event');
+    return data;
+  }
+
+  async adminUpdateEvent(eventId: string, payload: any) {
+    return this.updateClubEvent(eventId, payload);
+  }
+
+  async adminDeleteEvent(eventId: string) {
+    return this.deleteClubEvent(eventId);
+  }
+
+  async adminGetAnnouncements() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/announcements`, {
+        headers: this.getHeaders(),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return data.announcements || [];
+      }
+    } catch (e) {
+      console.warn('API adminGetAnnouncements error:', e);
+    }
+    return [];
+  }
+
+  async adminCreateAnnouncement(payload: { title: string; body: string; status?: string }) {
     const res = await fetch(`${API_BASE_URL}/admin/announcements`, {
       method: 'POST',
       headers: this.getHeaders(),
       body: JSON.stringify({
         title: payload.title,
         body: payload.body,
-        status: 'published',
+        status: payload.status || 'published',
       }),
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data?.error?.message || 'Failed to post announcement');
     return data;
+  }
+
+  async createAdminAnnouncement(payload: { title: string; body: string; status?: string }) {
+    return this.adminCreateAnnouncement(payload);
+  }
+
+  async adminUpdateAnnouncement(announcementId: string, payload: { title?: string; body?: string; status?: string }) {
+    const res = await fetch(`${API_BASE_URL}/admin/announcements/${announcementId}`, {
+      method: 'PATCH',
+      headers: this.getHeaders(),
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data?.error?.message || 'Failed to update announcement');
+    return data;
+  }
+
+  async adminDeleteAnnouncement(announcementId: string) {
+    const res = await fetch(`${API_BASE_URL}/admin/announcements/${announcementId}`, {
+      method: 'DELETE',
+      headers: this.getHeaders(),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data?.error?.message || 'Failed to delete announcement');
+    return data;
+  }
+
+  async adminGetRecruitments() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/recruitments`, {
+        headers: this.getHeaders(),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return (data.recruitments || []).map((r: any) => ({
+          ...r,
+          id: (r._id || r.id)?.toString(),
+          _id: (r._id || r.id)?.toString(),
+          googleFormUrl: r.googleFormUrl || r.applicationUrl,
+        }));
+      }
+    } catch (e) {
+      console.warn('API adminGetRecruitments error:', e);
+    }
+    return [];
+  }
+
+  async adminCreateRecruitment(payload: any) {
+    const res = await fetch(`${API_BASE_URL}/admin/recruitments`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data?.error?.message || 'Failed to create recruitment drive');
+    return data;
+  }
+
+  async adminUpdateRecruitment(recruitmentId: string, payload: any) {
+    return this.updateClubRecruitment(recruitmentId, payload);
+  }
+
+  async adminDeleteRecruitment(recruitmentId: string) {
+    return this.deleteClubRecruitment(recruitmentId);
   }
 }
 

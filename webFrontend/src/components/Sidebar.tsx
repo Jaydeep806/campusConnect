@@ -43,15 +43,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ onNavigateTab, activeSection }
       : role === 'admin'
       ? [
           { id: 'dashboard', label: 'Admin Dashboard', href: '/', icon: LayoutDashboard },
-          { id: 'societies', label: 'Clubs Directory', href: '/societies', icon: Shield },
+          { id: 'societies', label: 'Clubs & Societies', href: '/societies', icon: Shield },
+          { id: 'recruitment', label: 'Hiring Drives', href: '/recruitment', icon: Briefcase },
+          { id: 'events', label: 'All Events', href: '/events', icon: Calendar },
+          { id: 'announcements', label: 'Campus Notices', href: '/announcements', icon: Megaphone },
           { id: 'analytics', label: 'Campus Analytics', href: '/analytics', icon: BarChart2 },
-          { id: 'announcements', label: 'Notices', href: '/announcements', icon: Megaphone },
           { id: 'settings', label: 'Settings', href: '/settings', icon: Settings },
         ]
       : [
-          /* STUDENT NAVIGATION (Strictly Student Discovery & Participation) */
+          /* STUDENT NAVIGATION */
           { id: 'dashboard', label: 'Dashboard', href: '/', icon: LayoutDashboard },
           { id: 'societies', label: 'Explore Societies', href: '/societies', icon: Shield },
+          { id: 'recruitment', label: 'Hiring Drives', href: '/recruitment', icon: Briefcase },
           { id: 'events', label: 'Events & Workshops', href: '/events', icon: Calendar },
           { id: 'applications', label: 'My Applications', href: '/applications', icon: FileCheck2 },
           { id: 'announcements', label: 'Announcements', href: '/announcements', icon: Megaphone },

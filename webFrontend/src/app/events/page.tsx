@@ -84,8 +84,7 @@ export default function EventsPage() {
               </p>
             </div>
 
-            {/* ONLY CLUB LEADS CAN CREATE EVENTS */}
-            {role === 'club' && (
+            {(role === 'club' || role === 'admin') && (
               <button
                 className="apply-btn-primary"
                 style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
@@ -190,7 +189,7 @@ export default function EventsPage() {
                       </div>
                     </div>
 
-                    {role === 'club' ? (
+                    {role === 'club' || role === 'admin' ? (
                       <button
                         className="apply-btn-primary"
                         style={{

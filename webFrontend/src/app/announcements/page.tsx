@@ -22,6 +22,10 @@ import {
   Building2,
   ShieldCheck,
   Radio,
+  Edit3,
+  Trash2,
+  X,
+  AlertCircle,
 } from 'lucide-react';
 
 export default function AnnouncementsPage() {
@@ -35,6 +39,14 @@ export default function AnnouncementsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  // Admin edit states
+  const [editingAnnouncement, setEditingAnnouncement] = useState<AnnouncementItem | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editBody, setEditBody] = useState('');
+  const [editStatus, setEditStatus] = useState('published');
+  const [editSaving, setEditSaving] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
 
   useEffect(() => {
     loadAnnouncements();
@@ -68,6 +80,44 @@ export default function AnnouncementsPage() {
       alert(err.message || 'Failed to post announcement');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingAnnouncement) return;
+    const targetId = (editingAnnouncement.id || (editingAnnouncement as any)._id)?.toString();
+    if (!targetId) return;
+    setEditSaving(true);
+    setEditError(null);
+    try {
+      await api.adminUpdateAnnouncement(targetId, {
+        title: editTitle,
+        body: editBody,
+        status: editStatus,
+      });
+      setSuccessMsg('Announcement updated successfully!');
+      setEditingAnnouncement(null);
+      loadAnnouncements();
+      setTimeout(() => setSuccessMsg(null), 3500);
+    } catch (err: any) {
+      setEditError(err.message || 'Failed to update announcement');
+    } finally {
+      setEditSaving(false);
+    }
+  };
+
+  const handleDeleteAnnouncement = async (annId: string) => {
+    if (!window.confirm('Are you sure you want to delete this announcement? This action will remove it permanently for all students.')) {
+      return;
+    }
+    try {
+      await api.adminDeleteAnnouncement(annId);
+      setSuccessMsg('Announcement deleted successfully!');
+      loadAnnouncements();
+      setTimeout(() => setSuccessMsg(null), 3500);
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete announcement');
     }
   };
 
@@ -655,18 +705,68 @@ export default function AnnouncementsPage() {
                       </span>
                     </div>
 
-                    <div
-                      style={{
-                        fontSize: '0.76rem',
-                        color: 'var(--text-muted)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        fontWeight: 500,
-                      }}
-                    >
-                      <Calendar size={13} />
-                      <span>{ann.publishedAt}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                      <div
+                        style={{
+                          fontSize: '0.76rem',
+                          color: 'var(--text-muted)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          fontWeight: 500,
+                        }}
+                      >
+                        <Calendar size={13} />
+                        <span>{ann.publishedAt}</span>
+                      </div>
+
+                      {role === 'admin' && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <button
+                            onClick={() => {
+                              setEditingAnnouncement(ann);
+                              setEditTitle(ann.title);
+                              setEditBody(ann.body);
+                              setEditStatus((ann as any).status || 'published');
+                            }}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              padding: '4px 10px',
+                              borderRadius: '8px',
+                              background: '#EEF2FF',
+                              border: '1px solid #C7D2FE',
+                              color: '#4F46E5',
+                              fontSize: '0.74rem',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                            }}
+                          >
+                            <Edit3 size={12} />
+                            <span>Edit</span>
+                          </button>
+                          <button
+                            onClick={() => handleDeleteAnnouncement((ann.id || (ann as any)._id)?.toString())}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              padding: '4px 10px',
+                              borderRadius: '8px',
+                              background: '#FEE2E2',
+                              border: '1px solid #FECACA',
+                              color: '#DC2626',
+                              fontSize: '0.74rem',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                            }}
+                          >
+                            <Trash2 size={12} />
+                            <span>Delete</span>
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -702,6 +802,164 @@ export default function AnnouncementsPage() {
       </div>
 
       <MobileBottomNav />
+
+      {/* Admin Edit Announcement Modal */}
+      {editingAnnouncement && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15, 23, 42, 0.6)',
+            backdropFilter: 'blur(5px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '20px',
+          }}
+          onClick={() => setEditingAnnouncement(null)}
+        >
+          <div
+            style={{
+              background: '#FFFFFF',
+              borderRadius: '24px',
+              maxWidth: '560px',
+              width: '100%',
+              padding: '28px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              border: '1px solid var(--border-light)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: '20px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div
+                  style={{
+                    width: '38px',
+                    height: '38px',
+                    borderRadius: '10px',
+                    background: '#EEF2FF',
+                    color: '#4F46E5',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Megaphone size={18} />
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)' }}>
+                    Edit Announcement
+                  </h3>
+                  <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+                    Modify this notice on the official campus broadcast
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setEditingAnnouncement(null)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: 'var(--text-muted)',
+                  padding: '6px',
+                  borderRadius: '8px',
+                }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {editError && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '12px',
+                  background: '#FEE2E2',
+                  border: '1px solid #FECACA',
+                  borderRadius: '10px',
+                  color: '#B91C1C',
+                  fontSize: '0.85rem',
+                  marginBottom: '16px',
+                }}
+              >
+                <AlertCircle size={16} />
+                <span>{editError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSaveEdit}>
+              <div className="form-group" style={{ marginBottom: '16px' }}>
+                <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>
+                  Notice Title
+                </label>
+                <input
+                  type="text"
+                  className="form-input"
+                  required
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                />
+              </div>
+
+              <div className="form-group" style={{ marginBottom: '16px' }}>
+                <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>
+                  Notice Content
+                </label>
+                <textarea
+                  className="form-textarea"
+                  rows={5}
+                  required
+                  value={editBody}
+                  onChange={(e) => setEditBody(e.target.value)}
+                />
+              </div>
+
+              <div className="form-group" style={{ marginBottom: '24px' }}>
+                <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>
+                  Status
+                </label>
+                <select
+                  className="form-input"
+                  value={editStatus}
+                  onChange={(e) => setEditStatus(e.target.value)}
+                >
+                  <option value="published">Published (Visible to all students)</option>
+                  <option value="archived">Archived (Hidden from feed)</option>
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+                <button
+                  type="button"
+                  className="cancel-btn"
+                  onClick={() => setEditingAnnouncement(null)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="submit-btn"
+                  disabled={editSaving}
+                  style={{ minWidth: '130px' }}
+                >
+                  {editSaving ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
