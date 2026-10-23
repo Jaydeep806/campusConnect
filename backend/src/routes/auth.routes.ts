@@ -27,7 +27,7 @@ const googleClient = new OAuth2Client();
 
 authRouter.use(rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: 20,
+  limit: env.NODE_ENV === "production" ? 20 : 5000,
   standardHeaders: "draft-8",
   legacyHeaders: false,
 }));
